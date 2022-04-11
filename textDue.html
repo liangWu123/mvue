@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content ="width=device-width,initial-scale=1,user-scalable=no,minimum-scale=1,maximum-scale=1">
+    <title>Due</title>
+</head>
+
+<body>
+    <div id="test">
+        你好{{content}}
+        <span>{{description}}</span>
+    </div>
+
+    <script type="module">
+        import Due from "./Due/index.js";
+        window.text = new Due({
+            el:"test",
+            data:{
+                aa :123,
+                content:"wu",
+                description:"wu say hello",
+                obj:{
+                    a:1,
+                    b:2
+                },
+                arr:[1,{a:4,xx:5}],
+            }
+        })
+    </script>
+
+</body>
+</html>
