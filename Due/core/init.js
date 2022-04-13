@@ -1,4 +1,5 @@
 import {constructProxy} from "./proxy.js"
+import mount from "./mount.js";
 let uid = 0;
 export function initMixin(due){
     due.prototype._init = function (option){
@@ -14,6 +15,10 @@ export function initMixin(due){
         //初始化methods
         //初始化computed
         //挂在el
+        if(option&&option.el){
+            const elm = document.getElementById(option.el);
+            mount(vm,elm);
+        }
 
     }
 

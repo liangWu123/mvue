@@ -8,8 +8,14 @@
 
 <body>
     <div id="test">
-        你好{{content}}
-        <span>{{description}}</span>
+        你好{{content}},{{description}}<br/>
+        <span>{{description}}</span><br/>
+        <span>{{obj.a}}</span><br/>
+        <span>{{arr[0]}}</span><br/>
+        <span>{{arr[1].a}}</span><br/>
+        <input v-model = "aa"/><span>{{aa}}</span>
+        <span>{{obj.c[2]}}</span>
+
     </div>
 
     <script type="module">
@@ -22,7 +28,8 @@
                 description:"wu say hello",
                 obj:{
                     a:1,
-                    b:2
+                    b:2,
+                    c:[1,3,8]
                 },
                 arr:[1,{a:4,xx:5}],
             }

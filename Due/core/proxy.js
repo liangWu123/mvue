@@ -1,3 +1,4 @@
+import {randerData} from "./rander.js"
 /**
  * 
  * @param {*} vm 实例对象
@@ -55,7 +56,8 @@ function constructObjProxy(vm,obj,namespace){
             set:function(value){
                 obj[prop] = value;
                 //响应式
-                console.log(getNameSpace(namespace,prop))
+                randerData(vm,getNameSpace(namespace,prop))
+                // console.log(getNameSpace(namespace,prop))
             }
         })
         if(namespace==null || namespace == ''){
@@ -67,7 +69,9 @@ function constructObjProxy(vm,obj,namespace){
                 set:function(value){
                     obj[prop] = value;
                     //响应式
-                    console.log(getNameSpace(namespace,prop))
+                    randerData(vm,getNameSpace(namespace,prop))
+
+                    // console.log(getNameSpace(namespace,prop))
     
                 }
     
@@ -106,6 +110,9 @@ function defArrayFunc(obj,func,namespace,vm){
         value:function(...arg){
             let original = arrayPorot[func];
             original.apply(this,arg);
+            //响应式
+            randerData(vm,getNameSpace(namespace,prop))
+
             console.log("arr:"+namespace);
         }
     })
