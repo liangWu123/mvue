@@ -4,6 +4,8 @@ import {
 import {
     getAttr
 } from "./grammer/util.js";
+import { vfor,analysisVforValue } from "./grammer/vfor.js";
+import VBind from "./grammer/vbind.js";
 //vnode to template 的映射
 let vnode2template = new Map();
 //template to vnode 的映射
@@ -26,13 +28,23 @@ export function preparaRander(vm, vnode) {
         }
     }
     //是元素节点就遍历元素的子节点和另作处理
-    if (vnode.nodeType === 1) {
+    if (vnode.nodeType === 1||vnode.nodeType === 0) {
         //元素有v-model的情况
         if (vnode.elm.nodeName == "INPUT" && getAttr(vnode).indexOf('v-model') != -1) {
             vmodel(vm, vnode.elm, vnode.elm.getAttribute('v-model'));
             setTemplate2Vnode(vnode, vnode.elm.getAttribute('v-model'));
             setVnode2Template(vnode, vnode.elm.getAttribute('v-model'));
+
         }
+        //当元素有v-for时
+        else if(getAttr(vnode).indexOf('v-for') != -1){
+            //当v-for的元素nodeType是0是进，把v-for对应的属性设置到 template2Vnode和vnode2template中
+            //完成list改变能找到对应的vnode
+            setTemplate2Vnode(vnode,analysisVforValue(vnode.elm.getAttribute('v-for'))[1]);
+            setVnode2Template(vnode, analysisVforValue(vnode.elm.getAttribute('v-for'))[1]);
+            // console.log(template2vnode);
+        }
+        VBind(vm,vnode);
         for (let i = 0; vnode.children && i < vnode.children.length; i++) {
             preparaRander(vm, vnode.children[i]);
 
@@ -87,22 +99,6 @@ export function randerMixin(due) {
 function randerVnode(vm, vnode) {
     if (vnode) { //数据更新是进
         let temps = vnode2template.get(vnode);
-        // let rul = vnode.text;
-        // if (vnode.nodeType == 1) {
-        //     if (vnode.tag == "INPUT" && getAttr(vnode).indexOf('v-model') != -1) {
-        //         if (getTempValue([vm._data], temps)) {
-        //             rul = getTempValue([vm._data], temps);
-        //         }
-        //         vnode.elm.value = rul
-        //     }
-        // } else {
-        //     for (let i = 0; i < temps.length; i++) {
-        //         if (getTempValue([vm._data], temps[i])) {
-        //             rul = rul.replace("{{" + temps[i] + "}}", getTempValue([vm._data], temps[i]))
-        //         }
-        //     }
-        //     vnode.elm.nodeValue = rul;
-        // }
         getElmValue(vm, vnode, temps);
     }
     //初始化是vnode不传进用vnode2template进行初始化
@@ -122,21 +118,33 @@ function getElmValue(vm, vnode, temps) {
     if (vnode.nodeType == 1) {
         //v-model的情况
         if (vnode.tag == "INPUT" &&  getAttr(vnode).indexOf('v-model') != -1) {
-            if (getTempValue([vm._data], temps)) {
-                rul = getTempValue([vm._data], temps);
-
+            if (getTempValue([vm._data,vnode.parent.env], temps)) {
+                rul = getTempValue([vm._data,vnode.parent.env], temps);
+                vnode.elm.value = rul
             }
-            vnode.elm.value = rul
+        }
+        if(getAttr(vnode).indexOf('v-for') != -1){
+            //当数据更新是v-for的元素的nodeType设置为1，重新执行vfor函数
+            vfor(vm,vnode,vnode.elm.getAttribute("v-for"))
+            //把之前的对应关系清空
+            template2vnode.clear();
+            vnode2template.clear();
+            //重新设置template2vnode和vnode2template的对应关系
+            preparaRander(vm,vm._vnode);
+            //重新渲染数据
+            randerVnode(vm)
+
 
         }
+      
     }
     //是文本元素 
     else {
         for (let i = 0; i < temps.length; i++) {
             // console.log(getTempValue([vm._data],temps[i]))
-            if (getTempValue([vm._data], temps[i])) {
+            if (getTempValue([vm._data,vnode.parent.env], temps[i])) {
                 // console.log(getTempValue([vm._data],temps[i]))
-                rul = rul.replace("{{" + temps[i] + "}}", getTempValue([vm._data], temps[i]))
+                rul = rul.replace("{{" + temps[i] + "}}", getTempValue([vm._data,vnode.parent.env], temps[i]))
             }
         }
         vnode.elm.nodeValue = rul;
@@ -144,21 +152,31 @@ function getElmValue(vm, vnode, temps) {
 }
 
 //得到模板的数据
-function getTempValue(objs, string) {
+export function getTempValue(objs, string) {
     let arr = str2arr(string);
+    // console.log(objs)
+    // console.log(arr)
+    let str = {};
+
     for (let i = 0; i < objs.length; i++) {
-        let str = objs[i];
+        str = objs[i];
+
         //针对数组
         for (let i = 0; i < arr.length; i++) {
             if (str[arr[i]]) {
                 str = str[arr[i]]
-            } else {
-                return null;
-            }
+            } 
 
         }
-        return str
+        // console.log(str)
+        if(str!==objs[i]){
+            // console.log(str)
+            return str
+        }
+        // console.log(obj[i])
+
     }
+
 
 }
 export function setTempValue(obj, string, value) {
@@ -175,7 +193,7 @@ export function setTempValue(obj, string, value) {
     }
 }
 //针对作用域的字符转化为数组
-function str2arr(string) {
+export function str2arr(string) {
     let arr = [];
     pushArr(arr, string);
 
@@ -217,6 +235,13 @@ export function randerData(vm, template) {
     let vnodes = template2vnode.get(template);
     if (vnodes) {
         for (let i = 0; i < vnodes.length; i++) {
+            //数据更新时，首先把v-for的元素添加回来，设置成初始之前，准备重新执行vfor的函数
+            if(vnodes[i].nodeType == 0){
+                vnodes[i].parent.elm.innerHTML = "";
+                vnodes[i].parent.elm.appendChild(vnodes[i].elm)
+                vnodes[i].children =vnodes[i].children.slice(0,1) ;
+                vnodes[i].nodeType = 1;
+            }
             randerVnode(vm, vnodes[i]);
 
         }

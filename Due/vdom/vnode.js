@@ -14,7 +14,7 @@ export default class VNode{
         this.children = children,
         this.text = text,
         this.data = data,
-        this,parent = parent,
+        this.parent = parent,
         this.nodeType = nodeType,
         this.env = {},//当前节点的环境变量（v-for中用）
         this.instrucrions = [],//存放指令

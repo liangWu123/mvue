@@ -87,7 +87,8 @@ function proxyObjFunc(vm,arr,namespace){
     let obj = {
         eleType:Array,
         toString:function(){
-            console.log("这是改写后的Array的toString方法")
+           return 'My To String'
+            console.log("kkk")
         },
         push(){},
         pop(){},
@@ -111,7 +112,7 @@ function defArrayFunc(obj,func,namespace,vm){
             let original = arrayPorot[func];
             original.apply(this,arg);
             //响应式
-            randerData(vm,getNameSpace(namespace,prop))
+            randerData(vm,getNameSpace(namespace,""))
 
             console.log("arr:"+namespace);
         }

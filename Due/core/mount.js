@@ -22,7 +22,7 @@ export default function mount(vm,dom){
  * @param {*} dom 真实dom
  * @param {*} parent 真实dom的父级
  */
-function constructVnode(vm,dom,parent){
+export function constructVnode(vm,dom,parent){
     let vnode = null;
     let tag = dom.nodeName;
     let children = [];

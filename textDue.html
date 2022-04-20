@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content ="width=device-width,initial-scale=1,user-scalable=no,minimum-scale=1,maximum-scale=1">
     <title>Due</title>
+    <style>
+    .blue{color:blue}
+    .red{color:red}
+    </style>
 </head>
 
 <body>
@@ -15,6 +19,16 @@
         <span>{{arr[1].a}}</span><br/>
         <input v-model = "aa"/><span>{{aa}}</span>
         <span>{{obj.c[2]}}</span>
+        <ul>
+            <li v-for = "(item,key) in list">
+                姓名:{{item.name}} ,年龄:{{item.age}}
+            </li>
+        </ul>
+
+        <span :class="{ blue : obj.a = 2}">字的颜色</span>
+        <span :class = "{rde:isRed}">字的颜色</span>
+
+        <img :src="src" alt="123">
 
     </div>
 
@@ -32,6 +46,9 @@
                     c:[1,3,8]
                 },
                 arr:[1,{a:4,xx:5}],
+                list:[{name:"小张",age:18},{name:"小宋",age:15}],
+                src:"./img/a.png",
+                isRed:true
             }
         })
     </script>
